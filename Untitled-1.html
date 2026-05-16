@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>HydroSense - DEMO Funcional</title>
+    <style>
+        :root { --primary: #0056b3; --sidebar: #2c3e50; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background: var(--bg); }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: var(--sidebar); color: white; height: 100vh; position: fixed; padding: 20px; }
+        .sidebar h2 { color: #00a8e8; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .nav-links { list-style: none; padding: 0; }
+        .nav-links li { padding: 15px 10px; border-bottom: 1px solid #3e4f5f; cursor: pointer; transition: 0.3s; }
+        .nav-links li:hover { background: #34495e; color: #00a8e8; }
+
+        /* Contenedor Principal */
+        .main-content { margin-left: 290px; padding: 40px; width: calc(100% - 330px); }
+        header { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Grid de Módulos */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        .card img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+        .card-info { padding: 15px; }
+        .card-info h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.1rem; }
+        .card-info p { margin: 0; font-size: 0.9rem; color: #666; line-height: 1.4; }
+        
+        .status { color: #28a745; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>HydroSense</h2>
+        <ul class="nav-links">
+            <li>📊 Dashboard</li>
+            <li>📡 Sensores IoT</li>
+            <li>⚠️ Alertas Críticas</li>
+            <li>📋 Reportes ACA 3</li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <header>
+            <div>
+                <h1 style="margin:0;">Panel de Monitoreo Hídrico</h1>
+                <p style="margin:5px 0 0 0; color:#888;">Proyecto de Ingeniería de Sistemas - Facatativá</p>
+            </div>
+            <span class="status">● Sistema en Línea</span>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <img src="descarga.png" alt="Hardware IoT">
+                <div class="card-info">
+                    <h3>Captura de Datos (ESP32)</h3>
+                    <p>Interfaz de entrada para el procesamiento de flujo y presión de agua[cite: 20].</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="images.jpg" alt="Gráficas de Consumo">
+                <div class="card-info">
+                    <h3>Visualización de Resultados</h3>
+                    <p>Reportes generados para el análisis de cumplimiento de KPIs[cite: 22].</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="images (2).jpg" alt="Mapa de Red">
+                <div class="card-info">
+                    <h3>Red de Distribución</h3>
+                    <p>Monitoreo geográfico de los puntos de control en la población objeto[cite: 6].</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="images (3).jpg" alt="Ahorro de agua">
+                <div class="card-info">
+                    <h3>Gestión de Información</h3>
+                    <p>Optimización del recurso hídrico basada en la solución óptima identificada[cite: 6].</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

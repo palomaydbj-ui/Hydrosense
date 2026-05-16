@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>HydroSense - DEMO Funcional</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #0056b3; --sidebar: #2c3e50; --bg: #f4f7f6; --accent: #00a8e8; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; background: var(--bg); }
+        
+        .sidebar { width: 250px; background: var(--sidebar); color: white; height: 100vh; position: fixed; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .nav-links { list-style: none; padding: 0; flex-grow: 1; }
+        .nav-links li { padding: 15px 10px; border-bottom: 1px solid #3e4f5f; cursor: pointer; transition: 0.3s; }
+        .nav-links li:hover { background: #34495e; color: var(--accent); }
+        .logout-btn { background: #d9534f; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 30px; }
+
+        .main-content { margin-left: 290px; padding: 40px; width: calc(100% - 330px); }
+        header { background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: scale(1.03); border: 1px solid var(--accent); }
+        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .card-info { padding: 15px; }
+
+        #detalle-modulo { display: none; background: white; padding: 30px; border-radius: 15px; margin-top: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .btn-volver { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
+        .status { color: #28a745; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>HydroSense</h2>
+        <ul class="nav-links">
+            <li onclick="mostrarHome()">📊 Dashboard Principal</li>
+            <li onclick="mostrarDetalle('sensores')">📡 Monitoreo</li>
+            <li onclick="mostrarDetalle('alertas')">⚠️ Alertas</li>
+            <li onclick="mostrarDetalle('reportes')">📋 Reportes</li>
+        </ul>
+        <button class="logout-btn" onclick="window.location.href='login.html'">🚪 Salir</button>
+    </nav>
+
+    <div class="main-content">
+        <header>
+            <div>
+                <h1 id="titulo-pagina">Panel de Monitoreo Hídrico</h1>
+                <p id="subtitulo-pagina" style="margin:5px 0 0 0; color:#888;">Facatativá - Ingeniería de Sistemas</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <span class="status">● Sistema en Línea</span>
+                <img src="Faca.png" alt="Logo" style="height: 50px; border-radius: 5px;">
+            </div>
+        </header>
+
+        <div id="home-grid" class="grid">
+            <div class="card" onclick="mostrarDetalle('sensores')">
+                <img src="Grafica.jpg" alt="Gráficas">
+                <div class="card-info"><h3>Sensores IoT</h3><p>Ver flujo de datos real.</p></div>
+            </div>
+            <div class="card" onclick="mostrarDetalle('alertas')">
+                <img src="Monitoreo.png" alt="Mapa">
+                <div class="card-info"><h3>Alertas de Fugas</h3><p>Geolocalización en tiempo real.</p></div>
+            </div>
+            <div class="card" onclick="mostrarDetalle('reportes')">
+                <img src="Cargue.png" alt="Gestión">
+                <div class="card-info"><h3>Reporte de Ahorro</h3><p>Estadísticas de eficiencia.</p></div>
+            </div>
+        </div>
+
+        <div id="detalle-modulo">
+            <button class="btn-volver" onclick="mostrarHome()">← Volver</button>
+            <div id="contenido-dinamico"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Variables Globales
+        let liveChart; 
+        let dataHistory = { labels: [], presion: [], flujo: [] };
+
+        // 2. Definición de los datos de los módulos
+        const datosModulos = {
+            'sensores': {
+                titulo: '📡 Monitoreo IoT en Tiempo Real',
+                html: `
+                    <div style="background: white; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px;">
+                        <canvas id="graficoTiempoReal" style="width:100%; height:250px;"></canvas>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; background:#fff; padding:15px; border-radius:10px; border:1px solid #ddd;">
+                        <div style="text-align:center;">
+                            <h4 style="margin:0; color:#888;">Presión</h4>
+                            <span id="presion-valor" style="font-size:2rem; font-weight:bold; color:#00a8e8;">45.0</span> <small>PSI</small>
+                        </div>
+                        <div style="text-align:center; border-left:1px solid #ddd; padding-left:20px;">
+                            <h4 style="margin:0; color:#888;">Flujo</h4>
+                            <span id="flujo-valor" style="font-size:2rem; font-weight:bold; color:#28a745;">1.20</span> <small>L/s</small>
+                        </div>
+                    </div>
+                    <div style="margin-top:20px; background:#1e1e1e; color:#33ff33; font-family:'Courier New', monospace; padding:15px; border-radius:5px; font-size:0.8rem; height:100px; overflow:hidden;" id="terminal-iot">
+                        <div>> Recibiendo paquetes de datos...</div>
+                    </div>
+                `,
+                esIoT: true
+            },
+            'alertas': {
+                titulo: '⚠️ Geolocalización de Fuga Crítica',
+        html: `
+            <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid #ffeeba;">
+                <strong>INCIDENTE:</strong> Ruptura de tubería detectada. <br>
+                <strong>Ubicación:</strong> Barrio Juan Pablo II (4.8115, -74.3525)
+            </div>
+            <iframe width="100%" height="400" style="border:0; border-radius:10px;" loading="lazy" src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3976.2!2d-74.3525!3d4.8115!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sco!4v1621234567890"></iframe>
+        `,
+        esIoT: false
+    },
+            'reportes': {
+                titulo: '📋 Gráfica de Ahorro Semanal',
+                html: '<canvas id="myChart" style="width:100%; max-height:300px;"></canvas><div style="margin-top:20px;"><h3>Ahorro: 12%</h3><p>Optimización exitosa.</p></div>',
+                esGrafica: true
+            }
+        };
+
+        // 3. FUNCIÓN PARA MOSTRAR DETALLES
+        function mostrarDetalle(id) {
+            const mod = datosModulos[id];
+            document.getElementById('home-grid').style.display = 'none';
+            document.getElementById('detalle-modulo').style.display = 'block';
+            document.getElementById('titulo-pagina').innerText = mod.titulo;
+            document.getElementById('contenido-dinamico').innerHTML = mod.html;
+            
+            if (mod.esIoT) {
+                dataHistory = { labels: [], presion: [], flujo: [] }; // Reiniciar historial
+                setTimeout(inicializarGraficoVivo, 500); // Dar tiempo al canvas
+            } else if (mod.esGrafica) {
+                setTimeout(crearGrafica, 500);
+            }
+        }
+
+        function mostrarHome() {
+            document.getElementById('home-grid').style.display = 'grid';
+            document.getElementById('detalle-modulo').style.display = 'none';
+            document.getElementById('titulo-pagina').innerText = 'Panel de Monitoreo Hídrico';
+        }
+
+        // 4. FUNCIÓN DEL GRÁFICO VIVO
+        function inicializarGraficoVivo() {
+            const canvas = document.getElementById('graficoTiempoReal');
+            if(!canvas) return; // Si no existe el canvas, no hace nada
+            const ctx = canvas.getContext('2d');
+            liveChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dataHistory.labels,
+                    datasets: [
+                        { label: 'Presión (PSI)', data: dataHistory.presion, borderColor: '#00a8e8', tension: 0.4 },
+                        { label: 'Flujo (L/s)', data: dataHistory.flujo, borderColor: '#28a745', tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, animation: false }
+            });
+        }
+
+        // 5. FUNCIÓN DEL GRÁFICO DE REPORTES
+        function crearGrafica() {
+            const canvas = document.getElementById('myChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
+                    datasets: [{ label: 'Litros Ahorrados', data: [120, 190, 150, 210, 180, 240, 290], backgroundColor: '#00a8e8' }]
+                }
+            });
+        }
+
+        // 6. ACTUALIZACIÓN DE DATOS IOT
+        setInterval(() => {
+            const presionEl = document.getElementById('presion-valor');
+            if (presionEl && liveChart) {
+                const nP = (45 + (Math.random() * 2 - 1)).toFixed(1);
+                const nF = (1.2 + (Math.random() * 0.4 - 0.2)).toFixed(2);
+                const hora = new Date().toLocaleTimeString();
+
+                presionEl.innerText = nP;
+                document.getElementById('flujo-valor').innerText = nF;
+
+                if (dataHistory.labels.length > 10) {
+                    dataHistory.labels.shift();
+                    dataHistory.presion.shift();
+                    dataHistory.flujo.shift();
+                }
+                dataHistory.labels.push(hora);
+                dataHistory.presion.push(nP);
+                dataHistory.flujo.push(nF);
+                liveChart.update();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
